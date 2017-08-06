@@ -4,7 +4,9 @@ import com.bmwcarit.barefoot.road.BaseRoad;
 import com.bmwcarit.barefoot.road.BfmapWriter;
 import com.bmwcarit.barefoot.road.PostGISReader;
 import com.bmwcarit.barefoot.roadmap.Loader;
+import com.bmwcarit.barefoot.util.SourceException;
 import com.bmwcarit.barefoot.util.Tuple;
+import org.json.JSONException;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -27,59 +29,45 @@ public class MapFileMaker
         String dbProperties = args[0];
         String mapFile = args[1];
 
-        new MapFileMaker().MakeMapFile(dbProperties, mapFile);
-    }
-
-    private void MakeMapFile(String dbProperties, String mapFile) {
-        Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream(dbProperties));
-        } catch (IOException e) {
-            System.err.println(String.format("Cannot read properties file %s", dbProperties));
-            System.err.println(e);
+            new MapFileMaker().MakeMapFile(dbProperties, mapFile);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
             System.exit(1);
         }
+    }
+
+    private void MakeMapFile(String dbProperties, String mapFile) throws IOException, JSONException {
+        Properties properties = new Properties();
+        properties.load(new FileInputStream(dbProperties));
 
         String host = properties.getProperty("database.host");
         if (host == null) {
-            System.err.println("No database host specified in database properties");
-            System.exit(1);
+            throw new SourceException("No database host specified in database properties");
         }
         int port = Integer.parseInt(properties.getProperty("database.port", "0"));
         String database = properties.getProperty("database.name");
         if (database == null) {
-            System.err.println("No database name specified in database properties");
-            System.exit(1);
+            throw new SourceException("No database name specified in database properties");
         }
         String table = properties.getProperty("database.table");
         if (table == null) {
-            System.err.println("No database table specified in database properties");
-            System.exit(1);
+            throw new SourceException("No database table specified in database properties");
         }
         String user = properties.getProperty("database.user");
         if (user == null) {
-            System.err.println("No database user specified in database properties");
-            System.exit(1);
+            throw new SourceException("No database user specified in database properties");
         }
         String password = properties.getProperty("database.password");
         if (password == null) {
-            System.err.println("No database password specified in database properties");
-            System.exit(1);
+            throw new SourceException("No database password specified in database properties");
         }
         String path = properties.getProperty("database.road-types");
         if (path == null) {
-            System.err.println("No road types file specified in database properties");
-            System.exit(1);
+            throw new SourceException("No road types file specified in database properties");
         }
 
-        Map<Short, Tuple<Double, Integer>> config = null;
-        try {
-            config = Loader.read(path);
-        } catch (Exception e) {
-            System.err.println(String.format("Cannot read road map file %s", path));
-            System.err.println(e);
-            System.exit(1);
-        }
+        Map<Short, Tuple<Double, Integer>> config = Loader.read(path);
 
         PostGISReader reader = new PostGISReader(host, port, database, table, user, password, config);
         BfmapWriter writer = new BfmapWriter(mapFile);
