@@ -3,6 +3,8 @@ package casa.giddy.barefoot;
 import com.bmwcarit.barefoot.road.BaseRoad;
 import com.bmwcarit.barefoot.road.BfmapWriter;
 import com.bmwcarit.barefoot.road.PostGISReader;
+import com.bmwcarit.barefoot.road.RoadReader;
+import com.bmwcarit.barefoot.road.RoadWriter;
 import com.bmwcarit.barefoot.roadmap.Loader;
 import com.bmwcarit.barefoot.util.SourceException;
 import com.bmwcarit.barefoot.util.Tuple;
@@ -72,10 +74,10 @@ public class MapFileMaker
         PostGISReader reader = new PostGISReader(host, port, database, table, user, password, config);
         BfmapWriter writer = new BfmapWriter(mapFile);
 
-        ExtractMap(reader, writer);
+        CopyMap(reader, writer);
     }
 
-    private void ExtractMap(PostGISReader reader, BfmapWriter writer) {
+    private void CopyMap(RoadReader reader, RoadWriter writer) {
         reader.open();
         try {
             writer.open();
