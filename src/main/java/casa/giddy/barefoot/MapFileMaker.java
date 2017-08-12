@@ -43,7 +43,7 @@ public class MapFileMaker
         }
     }
 
-    private PostGISReader getDatabaseReader(String dbProperties) throws IOException, JSONException {
+    private PostGISReader getDatabaseReader(String dbProperties) throws IOException, JSONException, SourceException {
         Properties properties = new Properties();
         properties.load(new FileInputStream(dbProperties));
 
@@ -78,7 +78,7 @@ public class MapFileMaker
         return new PostGISReader(host, port, database, table, user, password, config);
     }
 
-    private void CopyMap(RoadReader reader, RoadWriter writer) {
+    private void CopyMap(RoadReader reader, RoadWriter writer) throws SourceException {
         reader.open();
         try {
             writer.open();
