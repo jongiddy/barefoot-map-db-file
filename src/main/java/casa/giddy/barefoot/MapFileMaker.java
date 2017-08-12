@@ -32,14 +32,18 @@ public class MapFileMaker
         String mapFile = args[1];
 
         try {
-            new MapFileMaker().MakeMapFile(dbProperties, mapFile);
+            MapFileMaker maker = new MapFileMaker();
+            maker.CopyMap(
+                    maker.getDatabaseReader(dbProperties),
+                    new BfmapWriter(mapFile)
+            );
         } catch (Exception e) {
             System.err.println(e.getMessage());
             System.exit(1);
         }
     }
 
-    private void MakeMapFile(String dbProperties, String mapFile) throws IOException, JSONException {
+    private PostGISReader getDatabaseReader(String dbProperties) throws IOException, JSONException {
         Properties properties = new Properties();
         properties.load(new FileInputStream(dbProperties));
 
@@ -71,10 +75,7 @@ public class MapFileMaker
 
         Map<Short, Tuple<Double, Integer>> config = Loader.read(path);
 
-        PostGISReader reader = new PostGISReader(host, port, database, table, user, password, config);
-        BfmapWriter writer = new BfmapWriter(mapFile);
-
-        CopyMap(reader, writer);
+        return new PostGISReader(host, port, database, table, user, password, config);
     }
 
     private void CopyMap(RoadReader reader, RoadWriter writer) {
